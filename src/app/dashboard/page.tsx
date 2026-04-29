@@ -4,6 +4,7 @@ import { Trash2, Plus, LayoutGrid, X, Image as ImageIcon, Loader2 } from "lucide
 import { getProjects, createProject, deleteProject } from "@/actions/projects";
 
 export default function TechnicalDashboard() {
+  // --- 1. All States at the Top ---
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,9 +15,11 @@ export default function TechnicalDashboard() {
     title: "",
     category: "Web Development",
     budget: 0,
-    image: ""
+    image: "",
+    clientId: "" 
   });
 
+  // --- 2. Data Loading Logic ---
   const loadData = async () => {
     const res = await getProjects();
     if (res.success) setProjects(res.projects);
@@ -25,11 +28,10 @@ export default function TechnicalDashboard() {
 
   useEffect(() => { loadData(); }, []);
 
-  // --- UPDATED IMAGE UPLOAD WITH COMPRESSION ---
+  // --- 3. Image Upload & Compression ---
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 2MB check for safety
       if (file.size > 2 * 1024 * 1024) {
         alert("Image bohot bari hai! Please 2MB se choti image use karein.");
         return;
@@ -40,7 +42,6 @@ export default function TechnicalDashboard() {
         const img = new Image();
         img.src = reader.result as string;
         img.onload = () => {
-          // Canvas compression logic
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 800; 
           const scaleSize = MAX_WIDTH / img.width;
@@ -49,8 +50,6 @@ export default function TechnicalDashboard() {
 
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // Quality set to 0.7 (70%) to avoid "Unterminated string" error
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           setFormData({ ...formData, image: compressedDataUrl });
         };
@@ -59,16 +58,38 @@ export default function TechnicalDashboard() {
     }
   };
 
+  // --- 4. Form Submission (Cleaned up and Integrated) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    const res = await createProject({ ...formData, status: activeStatus });
-    if (res.success) {
-      setIsModalOpen(false);
-      setFormData({ title: "", category: "Web Development", budget: 0, image: "" });
-      await loadData();
+    
+    // Manual check for image since Base64 doesn't trigger HTML 'required'
+    if (!formData.image) {
+      alert("Please upload an image first!");
+      return;
     }
-    setIsSubmitting(false);
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await createProject({ 
+        ...formData, 
+        status: activeStatus, 
+        clientId: formData.clientId || "cmoiqfa670004v7psnqz6zlrt" 
+      });
+
+      if (res.success) {
+        setIsModalOpen(false);
+        setFormData({ title: "", category: "Web Development", budget: 0, image: "", clientId: "" });
+        await loadData();
+      } else {
+        alert("Project save nahi ho saka. Dobara koshish karein.");
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+      alert("Kuch masla hua hai, console check karein.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -83,6 +104,12 @@ export default function TechnicalDashboard() {
     { title: "IN PROGRESS", status: "progress" },
     { title: "REVIEW", status: "review" }
   ];
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#0B0F1A] flex items-center justify-center text-white">
+      <Loader2 className="animate-spin text-blue-500" size={40} />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white p-6 md:p-10">
@@ -129,7 +156,6 @@ export default function TechnicalDashboard() {
               ))}
             </div>
 
-            {/* ADD BUTTON (Bottom Position) */}
             <button 
               onClick={() => { setActiveStatus(col.status); setIsModalOpen(true); }}
               className="group border-2 border-dashed border-white/5 rounded-[45px] py-14 flex flex-col items-center justify-center bg-white/[0.01] hover:border-blue-500/40 hover:bg-blue-500/[0.02] transition-all active:scale-95"
@@ -181,6 +207,14 @@ export default function TechnicalDashboard() {
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                 />
+                
+                <input 
+                  required placeholder="Client ID"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm outline-none focus:border-blue-500 transition-all"
+                  value={formData.clientId}
+                  onChange={(e) => setFormData({...formData, clientId: e.target.value})}
+                />
+
                 <select 
                   className="w-full bg-[#0B0F1A] border border-white/10 rounded-2xl p-5 text-sm outline-none"
                   value={formData.category}

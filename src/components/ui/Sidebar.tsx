@@ -1,41 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { LayoutGrid, Briefcase, Users, CheckSquare, Zap, Settings, FileText, Menu, X } from "lucide-react";
-import { getUser } from "@/actions/user";
 
 export default function Sidebar({ theme = "dark" }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session } = useSession();
 
-  const [userData, setUserData] = useState({
-    name: "Ayesha Khalid",
-    email: "ayeshaqq36@gmail.com",
-    image: null as string | null
-  });
+  const userData = {
+    name: session?.user?.name || "User",
+    email: session?.user?.email || "",
+    image: session?.user?.image || null,
+  };
 
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    async function loadUserData() {
-      try {
-        const dbUser = await getUser(userData.email);
-        if (dbUser) {
-          setUserData({
-            name: dbUser.name || "Ayesha Khalid",
-            email: dbUser.email,
-            image: dbUser.image || null,
-          });
-        }
-      } catch (error) {
-        console.error("Sidebar data fetch error:", error);
-      }
-    }
-    loadUserData();
-  }, []);
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutGrid, href: "/dashboard" },

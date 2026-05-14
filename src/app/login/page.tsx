@@ -118,7 +118,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center">
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 w-full flex justify-center">
             <ReCAPTCHA
-              sitekey="6LfdaLgsAAAAANcwcM-uwf5pW39bSbjhb-S1V5FW"
+              sitekey="6LdQueksAAAAAORaR9YxHK8Ry_co6nywn8btB-4I"
               onChange={handleCaptchaChange}
               theme="light"
               size="normal"

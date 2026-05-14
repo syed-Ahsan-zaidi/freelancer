@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MoreHorizontal, Trash, RefreshCw, Search, Users, ShieldCheck, UserPlus, Mail, X, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MoreHorizontal, Trash, RefreshCw, Search, Users, ShieldCheck, UserPlus, Mail, X, Loader2, ChevronRight } from "lucide-react";
 import { getClients, createClient, deleteClient } from "@/actions/clients";
 
 interface Client {
@@ -11,6 +12,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -128,14 +130,18 @@ export default function ClientsPage() {
                 </tr>
               ) : (
                 filtered.map(client => (
-                  <tr key={client.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr
+                    key={client.id}
+                    className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                    onClick={() => router.push(`/clients/${client.id}`)}
+                  >
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shrink-0">
                           {client.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-slate-800">{client.name}</p>
+                          <p className="font-bold text-sm text-slate-800 group-hover:text-blue-600 transition-colors">{client.name}</p>
                           <p className="text-[9px] text-slate-400 uppercase font-bold">Active</p>
                         </div>
                       </div>
@@ -145,7 +151,7 @@ export default function ClientsPage() {
                         <Mail size={11} className="text-slate-400" /> {client.email}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-right relative">
+                    <td className="py-4 px-6 text-right relative" onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => setActiveMenu(activeMenu === client.id ? null : client.id)}
                         className="p-2 text-slate-400 hover:text-slate-700 transition-colors rounded-lg hover:bg-slate-100"
@@ -178,7 +184,11 @@ export default function ClientsPage() {
             </div>
           ) : (
             filtered.map(client => (
-              <div key={client.id} className="p-4 flex items-center justify-between">
+              <div
+                key={client.id}
+                className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => router.push(`/clients/${client.id}`)}
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shrink-0">
                     {client.name?.charAt(0).toUpperCase()}
@@ -188,12 +198,15 @@ export default function ClientsPage() {
                     <p className="text-[10px] text-slate-400">{client.email}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(client.id)}
-                  className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash size={16} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={e => { e.stopPropagation(); handleDelete(client.id); }}
+                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash size={16} />
+                  </button>
+                  <ChevronRight size={16} className="text-slate-300" />
+                </div>
               </div>
             ))
           )}

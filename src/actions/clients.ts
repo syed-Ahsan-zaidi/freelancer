@@ -74,6 +74,30 @@ export async function createClient(data: { name: string; email: string }) {
 }
 
 /**
+ * Single client with projects and invoices.
+ */
+export async function getClientById(id: string) {
+  try {
+    return await prisma.client.findUnique({
+      where: { id },
+      include: {
+        projects: {
+          orderBy: { createdAt: "desc" },
+          select: { id: true, title: true, status: true, budget: true, image: true, createdAt: true }
+        },
+        invoices: {
+          orderBy: { createdAt: "desc" },
+          select: { id: true, invoiceNo: true, amount: true, total: true, status: true, dueDate: true, createdAt: true }
+        }
+      }
+    });
+  } catch (error) {
+    console.error("getClientById Error:", error);
+    return null;
+  }
+}
+
+/**
  * Client delete karne ke liye function.
  */
 export async function deleteClient(id: string) {

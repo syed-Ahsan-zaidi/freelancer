@@ -4,13 +4,13 @@ import { prisma } from "./prisma.config";
 import { revalidatePath } from "next/cache";
 
 // 1. Project Create Function (Jo pehle se sahi chal raha hai)
-export async function createProject(data: { 
-  title: string, 
-  clientId: string, 
-  status: string, 
+export async function createProject(data: {
+  title: string,
+  clientId: string,
+  status: string,
   budget: number,
-  image: string,
-  description: string 
+  description: string,
+  image?: string
 }) {
   try {
     let activeUser = await prisma.user.findFirst();
@@ -31,7 +31,7 @@ export async function createProject(data: {
       targetClientId = existingClient.id;
     }
 
-    const project = await (prisma.project as any).create({
+    const project = await prisma.project.create({
       data: {
         title: data.title,
         clientId: targetClientId,
@@ -39,11 +39,34 @@ export async function createProject(data: {
         budget: Number(data.budget),
         userId: activeUser.id,
         description: data.description || "",
-        image: data.image || "", 
+        image: data.image || null,
+      },
+    });
+
+    // Automatically task bhi create karo is project ke liye
+    await prisma.task.create({
+      data: {
+        title: `Start: ${data.title}`,
+        description: `Initial task for project "${data.title}"`,
+        status: "Todo",
+        priority: "HIGH",
+        projectId: project.id,
+      },
+    });
+
+    // Notification create karo
+    await prisma.notification.create({
+      data: {
+        message: `New project "${data.title}" created`,
+        type: "PROJECT",
+        userId: activeUser.id,
+        isRead: false,
       },
     });
 
     revalidatePath("/projects");
+    revalidatePath("/tasks");
+    revalidatePath("/dashboard");
     return { success: true, project };
   } catch (error: any) {
     console.error("Project Create Error:", error);
@@ -57,15 +80,14 @@ export async function updateProject(id: string, data: any) {
     // Check karein ke ID aa rahi hai ya nahi
     if (!id) return { success: false, error: "Project ID is required for update." };
 
-    const updatedProject = await (prisma.project as any).update({
+    const updatedProject = await prisma.project.update({
       where: { id: id },
       data: {
-        title: data.title,
+        title: data.title || data.name,
         description: data.description,
         status: data.status,
-        // Budget ko number mein convert karna zaroori hai
-        budget: data.budget ? Number(data.budget) : undefined,
-        image: data.image,
+        budget: data.budget ? Number(data.budget) : data.totalBudget ? Number(data.totalBudget) : undefined,
+        image: data.image || undefined,
       },
     });
 

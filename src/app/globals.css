@@ -2,12 +2,12 @@
 
 @layer base {
   :root {
-    --bg-main: #000000;      /* Pure Black */
-    --bg-card: #0A0A0A;      /* Dark Card */
-    --accent: #3b82f6;       /* Blue Accent */
-    --text-main: #ffffff;
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --border: rgba(255, 255, 255, 0.1);
+    --bg-main: #f8fafc;      /* Light Background */
+    --bg-card: #ffffff;      /* White Card */
+    --accent: #2563eb;       /* Blue Accent */
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: rgba(0, 0, 0, 0.05);
   }
 
   [data-theme='light'] {

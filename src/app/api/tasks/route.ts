@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, description, status, category, projectId, dueDate } = body;
+    const { title, description, status, projectId, dueDate } = body;
 
     // Validation
     if (!title || !projectId) {
@@ -35,9 +35,7 @@ export async function POST(req: Request) {
         title,
         description: description || "",
         status: status || "Todo",
-        category: category || "General",
         dueDate: dueDate || null,
-        // Relation linking
         project: {
           connect: { id: projectId }
         }

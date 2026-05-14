@@ -9,45 +9,41 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const [isVerified, setIsVerified] = useState(false);
 
-  // Captcha status handler
   const handleCaptchaChange = (value: string | null) => {
-    if (value) setIsVerified(true);
-    else setIsVerified(false);
+    setIsVerified(!!value);
   };
 
-  // --- 1. SIGNED IN PROFILE UI ---
+  // Authenticated state
   if (status === "authenticated") {
     return (
-      <div className="min-h-screen bg-[#060B18] flex items-center justify-center p-6 text-white">
-        <motion.div 
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-105 bg-[#111827]/80 p-10 rounded-[2.5rem] border border-white/10 shadow-2xl backdrop-blur-xl text-center"
+          className="w-full max-w-sm bg-white p-8 rounded-3xl border border-slate-200 shadow-xl text-center"
         >
           {session.user?.image ? (
-            <img src={session.user.image} alt="User Avatar" className="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-blue-500 shadow-xl" />
+            <img src={session.user.image} alt="User Avatar" className="w-20 h-20 rounded-full mx-auto mb-5 border-4 border-blue-500 shadow-lg" />
           ) : (
-            <UserCircle size={80} className="text-slate-700 mx-auto mb-6" />
+            <UserCircle size={72} className="text-slate-300 mx-auto mb-5" />
           )}
-          
-          <h1 className="text-3xl font-extrabold tracking-tighter mb-2">Welcome Back!</h1>
-          <p className="text-white text-xl font-medium mb-1">{session.user?.name}</p>
-          <p className="text-slate-500 text-sm font-semibold mb-8 border-l-2 border-blue-500 pl-4">{session.user?.email}</p>
-          
-          <div className="flex flex-col gap-4">
-            <button 
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Welcome Back!</h1>
+          <p className="text-slate-800 font-bold mb-1">{session.user?.name}</p>
+          <p className="text-slate-400 text-sm mb-8">{session.user?.email}</p>
+          <div className="flex flex-col gap-3">
+            <button
               onClick={() => signOut({ callbackUrl: '/login' })}
-              className="w-full flex items-center justify-center gap-3 bg-red-500/10 text-red-500 py-4 rounded-2xl text-base font-bold hover:bg-red-500 hover:text-white transition-all shadow-xl shadow-red-500/10 group"
+              className="w-full flex items-center justify-center gap-3 bg-red-50 text-red-500 border border-red-200 py-3.5 rounded-xl font-bold hover:bg-red-500 hover:text-white hover:border-red-500 transition-all group"
             >
-              <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-              Sign Out from Account
+              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+              Sign Out
             </button>
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl text-base font-bold transition-all shadow-xl shadow-blue-600/20 group"
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-all group"
             >
               Go to Dashboard
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </motion.div>
@@ -55,85 +51,92 @@ export default function LoginPage() {
     );
   }
 
-  // --- 2. SIGN IN FORM UI (Updated Order) ---
   return (
-    <div className="min-h-screen bg-[#060B18] flex items-center justify-center p-6 text-white relative overflow-hidden">
-      
-      {/* Background decoration */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-blue-600/5 rounded-full blur-[150px] pointer-events-none"></div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
 
-      <motion.div 
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-100 rounded-full blur-[120px] pointer-events-none" />
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-112.5 bg-[#111827]/80 p-10 lg:p-12 rounded-[2.5rem] border border-white/10 shadow-2xl backdrop-blur-xl relative z-10"
+        className="w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl border border-slate-200 shadow-xl relative z-10"
       >
-        <div className="text-center mb-10">
+        {/* Logo */}
+        <div className="text-center mb-8">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-            className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-blue-500/30 shadow-lg shadow-blue-600/10"
+            className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-200"
           >
-            <ShieldCheck className="text-blue-500" size={32} />
+            <ShieldCheck className="text-white" size={28} />
           </motion.div>
-          <h1 className="text-4xl font-black text-white leading-tight tracking-tighter">Freelance Tracker Pro<span className="text-blue-500">.</span></h1>
-          <p className="text-slate-500 text-sm mt-3 font-medium uppercase tracking-[0.2em] border-l border-white/5 pl-4">Verify Identity</p>
+          <h1 className="text-3xl font-black text-slate-900 leading-tight tracking-tighter">
+            Freelance Tracker<span className="text-blue-500">.</span>
+          </h1>
+          <p className="text-slate-400 text-xs mt-2 font-bold uppercase tracking-widest">Verify Your Identity</p>
         </div>
 
-        {/* --- Social Buttons (Now First) --- */}
-        <div className="space-y-4 mb-8">
-          <button 
+        {/* Social Buttons */}
+        <div className="space-y-3 mb-6">
+          <button
             disabled={!isVerified}
-            onClick={() => signIn("github", { callbackUrl: "/" })}
-            className={`w-full flex items-center justify-center gap-4 bg-white/5 border border-white/10 py-4 rounded-2xl text-white font-bold transition-all shadow-xl group ${!isVerified ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10 cursor-pointer"}`}
+            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+            className={`w-full flex items-center justify-center gap-3 border py-3.5 rounded-xl font-bold transition-all group text-sm ${
+              !isVerified
+                ? "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
+                : "bg-slate-900 border-slate-900 text-white hover:bg-slate-700 cursor-pointer"
+            }`}
           >
-            <Github size={24} className="group-hover:scale-110 transition-transform" />
+            <Github size={20} className="group-hover:scale-110 transition-transform" />
             Continue with GitHub
           </button>
 
-          <button 
+          <button
             disabled={!isVerified}
-            onClick={() => signIn("google", { callbackUrl: "/" })}
-            className={`w-full flex items-center justify-center gap-4 bg-white/5 border border-white/10 py-4 rounded-2xl text-white font-bold transition-all shadow-xl group ${!isVerified ? "opacity-30 cursor-not-allowed" : "hover:bg-white/10 cursor-pointer"}`}
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            className={`w-full flex items-center justify-center gap-3 border py-3.5 rounded-xl font-bold transition-all group text-sm ${
+              !isVerified
+                ? "bg-slate-50 border-slate-200 text-slate-300 cursor-not-allowed"
+                : "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 cursor-pointer"
+            }`}
           >
-            <Chrome size={24} className="text-red-500 group-hover:scale-110 transition-transform" />
+            <Chrome size={20} className="text-red-500 group-hover:scale-110 transition-transform" />
             Continue with Google
           </button>
         </div>
 
-        {/* --- Divider --- */}
-        <div className="relative mb-8 flex items-center">
-            <div className="grow border-t border-white/5"></div>
-            <span className="mx-4 text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">Security Check</span>
-            <div className="grow border-t border-white/5"></div>
+        {/* Divider */}
+        <div className="relative mb-6 flex items-center">
+          <div className="flex-1 border-t border-slate-200" />
+          <span className="mx-4 text-[9px] text-slate-400 font-bold uppercase tracking-widest">Security Check</span>
+          <div className="flex-1 border-t border-slate-200" />
         </div>
 
-        {/* --- reCAPTCHA (Now Below) --- */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="bg-black/20 p-4 rounded-xl border border-white/5 w-full flex justify-center">
+        {/* reCAPTCHA */}
+        <div className="flex flex-col items-center">
+          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 w-full flex justify-center">
             <ReCAPTCHA
               sitekey="6LfdaLgsAAAAANcwcM-uwf5pW39bSbjhb-S1V5FW"
               onChange={handleCaptchaChange}
-              theme="dark"
+              theme="light"
               size="normal"
             />
           </div>
-
           {!isVerified && (
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-[11px] text-blue-500 text-center mt-4 font-bold uppercase tracking-[0.2em] animate-pulse"
+              className="text-[10px] text-blue-500 text-center mt-3 font-bold uppercase tracking-widest"
             >
-              Please verify you are not a robot to login
+              Complete verification to continue
             </motion.p>
           )}
         </div>
 
-        <div className="relative mt-12 flex items-center">
-           <div className="grow border-t border-white/5"></div>
-           <span className="mx-4 text-[10px] text-slate-800 font-bold uppercase tracking-[0.2em]">Freelance-Tracker Security</span>
-           <div className="grow border-t border-white/5"></div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Freelance Tracker — Secure Login</p>
         </div>
       </motion.div>
     </div>

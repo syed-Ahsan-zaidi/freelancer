@@ -3,7 +3,7 @@
 import { prisma } from "./prisma.config";
 import { revalidatePath } from "next/cache";
 
-// Humne 'image' field add ki hai profile picture ke liye
+// Profile update logic
 export async function updateProfile(data: { 
   name: string; 
   email: string; 
@@ -20,19 +20,19 @@ export async function updateProfile(data: {
       update: {
         name: data.name,
         bio: data.bio,
-        image: data.image, // Image update logic
+        image: data.image,
       },
       create: {
         email: formattedEmail,
         name: data.name,
         bio: data.bio,
         image: data.image,
+        role: "CLIENT", // Default role for new users
       },
     });
 
     console.log("Profile Sync Successful for:", user.email);
     
-    // In dono paths ko revalidate karein taake settings page par bhi update dikhe
     revalidatePath("/settings/profile"); 
     revalidatePath("/settings"); 
     
@@ -43,23 +43,22 @@ export async function updateProfile(data: {
   }
 }
 
-// ✅ Optimized: Page load hote hi database se sahi data layega
+// ✅ Fix: inquiryNotify ko hata diya aur role add kiya
 export async function getUser(email: string) {
-  if (!email) return null; // ✅ Check taake empty query na chaly
+  if (!email) return null;
   try {
-    // Unique fetch boht fast hota hai, 7 seconds tabhi lagtay hain jab connection pool full ho
     const user = await prisma.user.findUnique({
       where: { email: email.trim().toLowerCase() },
-      // ✅ Performance fix: Sirf wo fields mangwayein jo dashboard par chahiye
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
         bio: true,
+        role: true,
         emailNotify: true,
         desktopNotify: true,
-        inquiryNotify: true
+        inquiryNotify: true,
       }
     });
     return user;
@@ -69,15 +68,20 @@ export async function getUser(email: string) {
   }
 }
 
+// ✅ Notification logic updated
 export async function updateNotifications(email: string, prefs: {
   emailNotify: boolean;
   desktopNotify: boolean;
-  inquiryNotify: boolean;
+  inquiryNotify?: boolean;
 }) {
   try {
     await prisma.user.update({
-      where: { email: email.trim().toLowerCase() }, // ✅ Consistency fix
-      data: prefs,
+      where: { email: email.trim().toLowerCase() },
+      data: {
+        emailNotify: prefs.emailNotify,
+        desktopNotify: prefs.desktopNotify,
+        inquiryNotify: prefs.inquiryNotify,
+      },
     });
     revalidatePath("/settings/notifications");
     return { success: true };

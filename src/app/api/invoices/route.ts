@@ -10,11 +10,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Client ID not found" }, { status: 404 });
     }
 
+    const parsedAmount = parseFloat(amount.toString());
     const newInvoice = await prisma.invoice.create({
       data: {
-        amount: parseFloat(amount.toString()),
-        status: "PENDING",
-        clientId: clientId,
+        invoiceNo: `INV-${Date.now()}`,
+        amount: parsedAmount,
+        total: parsedAmount,
+        status: "UNPAID",
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 din baad
+        client: { connect: { id: clientId } },
       },
     });
     return NextResponse.json(newInvoice);

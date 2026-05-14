@@ -7,86 +7,126 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Role define kiya (Admin aur User)
 enum Role {
   ADMIN
-  USER
+  CLIENT
 }
 
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
   name          String?
-  role          Role      @default(USER) // 2. Yeh line role add karti hai
-  bio           String?   @default("Freelance Web Developer") 
-  createdAt     DateTime  @default(now())
-  projects      Project[]
+  role          Role      @default(CLIENT) 
+  bio           String?   @default("Research Collaborator") 
   image         String?   
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  projects      Project[] // Projects managed by this user
+  ownedClient   Client?   @relation("UserToClient") // Agar user ek client hai
+  
   emailNotify   Boolean   @default(true)
   desktopNotify Boolean   @default(true)
   inquiryNotify Boolean   @default(true)
-}
-
-model Task {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  status      String    @default("Todo")
-  category    String?
-  image       String?
-  dueDate     DateTime? 
-
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
 }
 
 model Client {
   id        String    @id @default(cuid())
   name      String
   email     String?   @unique
+  
+  // Mentor's Logic: Connecting Client to a User Account
+  userId    String?   @unique
+  user      User?     @relation("UserToClient", fields: [userId], references: [id])
+
   projects  Project[]
   invoices  Invoice[]
+  
+  // Real-life data: Company details
+  company   String?
+  address   String?
   createdAt DateTime  @default(now())
 }
 
 model Project {
   id          String    @id @default(cuid())
   title       String
-  clientId    String
-  status      String    @default("ACTIVE")
+  description String?
+  status      String    @default("ACTIVE") // ACTIVE, COMPLETED, ON_HOLD
   budget      Float?
-  description String? 
-  image       String? 
-  userId      String
-  createdAt   DateTime @default(now())
-  user        User      @relation(fields: [userId], references: [id])
-  category    String @default("Web Development")
-  tasks       Task[]
+  category    String    @default("Web Development")
+  image       String?
+  
+  // Progress tracking
+  progress    Int       @default(0) // 0 to 100%
+  
+  clientId    String
   client      Client    @relation(fields: [clientId], references: [id])
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  tasks       Task[]
   invoices    Invoice[]
+  research    ResearchData[] // Searchable research papers/data
+  
+  createdAt   DateTime  @default(now())
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("TODO")
+  priority    String    @default("MEDIUM")
+  dueDate     DateTime?
+  price       Float?    // Invoice amount jab task complete ho
+
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+}
+
+// Mentor's Requirement: Searchable Data
+model ResearchData {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   // The actual research text or summary
+  fileUrl     String?  // Link to PDF/Image
+  tags        String[] // For easy searching
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
 }
 
 model Invoice {
-  id        String @id @default(cuid())
-  amount    Float
-  status    String @default("PENDING")
-  clientId String
-  client    Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  invoiceNo   String   @unique // e.g., INV-001
+  amount      Float
+  tax         Float    @default(0)
+  total       Float
+  status      String   @default("UNPAID") // UNPAID, PAID, OVERDUE
+  
+  dueDate     DateTime
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id])
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model Stat {
+model Notification {
   id        String   @id @default(cuid())
-  label     String
-  value     String
-  change    String
-  icon      String?
+  message   String
+  type      String   // INVOICE, TASK, PROJECT
+  isRead    Boolean  @default(false)
+  userId    String
   createdAt DateTime @default(now())
 }

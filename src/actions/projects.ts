@@ -38,9 +38,9 @@ export async function createProject(formData: any) {
 
         const newProject = await prisma.project.create({
             data: {
-                title: formData.title, // ✅ 'name' ki jagah 'title' fixed
+                title: formData.title,
                 category: formData.category,
-                image: formData.image || "",
+                image: formData.image || null,
                 status: formData.status || "draft",
                 budget: parseFloat(formData.budget.toString()), 
                 userId: user.id,

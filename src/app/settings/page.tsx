@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Github as GitHubIcon, ExternalLink, Mail, User, Shield, Bell, LogOut } from "lucide-react";
-import { getUser } from "@/actions/user"; // Action import karein
+import { Github as GitHubIcon, ExternalLink, Mail, User, Shield, Bell } from "lucide-react";
+import { getUser } from "@/actions/user";
+import LogoutButton from "@/components/ui/LogoutButton";
 
 const settings = [
   {
@@ -97,14 +98,7 @@ export default async function SettingsPage() {
               </a>
             </div>
             
-            {/* Logout button client logic ke liye aap alag component bana sakti hain, filhal simple link */}
-            <Link 
-              href="/"
-              className="w-full mt-8 bg-white/5 hover:bg-rose-500/10 hover:text-rose-500 text-white text-sm font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group/logout"
-            >
-              <LogOut size={18} className="group-hover/logout:translate-x-1 transition-transform" />
-              Log Out
-            </Link>
+            <LogoutButton />
           </div>
         </div>
       </div>
